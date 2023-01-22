@@ -1,0 +1,30 @@
+main.py muss gestartet werden, 
+um ein komplettes Skatspiel zu spielen und enthält die Oberfläche
+und die Schnittstelle für das Ausspielen
+wenn weitere Trainingsdaten erstellt werden wollen, muss
+der Aufruf der Funktion run() kommentiert werden und die Kommentierung
+des Aufrufs create_data_set() entfernt werden
+
+bidding.py zeigt die Oberfläche für das Reizen
+
+players.py beinhaltet alle Methoden für die Bewertung des
+Blattes eines Spielers
+mit der Methode 'calculate_power_of_algorithm' wird der komplette
+Testdatensatz berechnet, dafür muss der Import 'model'
+auskommentiert werden
+In der Klasse 'MCTS_Player' wird der Spielalgorithmus
+dargestellt und der beste Zug eines Spielers bei aktueller 
+Situation berechnet
+
+In der Datei 'game.py' wird das Spielgeschehen simuliert. 
+Dort ist die Berechnung der Züge, Spielergebnisse und 
+Reihenfolge gegeben
+
+Durch die Datei 'model.py' ist die Berechnung der SVM 
+gegeben, wenn die Ausgabe getestet werden möchte,
+müssen die Kommentierungen in den Zeilen 293 bis 295 entfernt werden
+und diese Datei ausgeführt werden
+Die Parametereinstellungen geschehen in der Methode 'model'
+Zeile 72: Anzahl Trainingsdatensätze
+Zeile 76: Anfang, Ende, Schrittweite der Untersuchung C Parameter
+Zeile 78: grad der Kernel Funktion unter degree
