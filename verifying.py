@@ -79,8 +79,8 @@ def model(kernel_degree, amount_datas):
             countFalse += 1
     print(countTrue, countTruePlayable, countFalse, countFalsePlayable)
 
-#model1.run_datas()
-#model(2, 1000)
+model1.run_datas()
+model(2, 1000)
 print()
 #player1.calculate_power_of_algorithm()
 #player1.cards = [Card(2, 2), Card(2, 0), Card(11, 3), Card(10, 3), Card(4, 3), Card(9, 3), Card(11, 2),
