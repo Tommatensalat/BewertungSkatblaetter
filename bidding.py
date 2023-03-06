@@ -3,8 +3,10 @@ from players import player1, player2, player3
 from game import game
 
 
-# shows the images of the cards
 def show_images():
+    '''
+    passt die Größe der Karten an und zeigt sie an
+    '''
     
      # Images Player 1
     player1_image1 = player1.resize_card(f"assets/{player1.cards[0]}.png", False)
@@ -131,31 +133,40 @@ def show_images():
     l30.image = player3_image10
     
 
-# hands the decks to the players
 def hand_the_deck():
+    # teilt die Blätter an die Spieler aus
     global deck
     player1.take_cards(deck)
     player2.take_cards(deck)
     player3.take_cards(deck)
-    game.set_game_order([player1, player2, player3])
-    player2.find_possible_trump()
-    player3.bidding_with_learning(player3.cards)
+    if game.games == 0:
+        game.set_game_order([player1, player2, player3])
+    #player2.find_possible_trump()
+    #player3.bidding_with_learning(player3.cards)
+    
     
 
 # shows the game trump in a label
 def show_trump():
     global deck
-    game.trump, bidding_winner = game.get_game_trump([game.playing_order[0], game.playing_order[1]])
-    if bidding_winner == game.playing_order[0]:
-        game.trump, bidding_winner = game.get_game_trump([game.playing_order[2], game.playing_order[1]])
-    elif bidding_winner == game.playing_order[1]:
-        game.trump, bidding_winner = game.get_game_trump([game.playing_order[2], game.playing_order[1]])
+    '''
+    für die Trumpfanzeige der Spieler verantwortlich
+    '''
+    #game.trump, bidding_winner = game.get_game_trump([game.playing_order[0], game.playing_order[1]])
+    #if bidding_winner == game.playing_order[0]:
+    #    game.trump, bidding_winner = game.get_game_trump([game.playing_order[2], game.playing_order[1]])
+    #elif bidding_winner == game.playing_order[1]:
+    #    game.trump, bidding_winner = game.get_game_trump([game.playing_order[2], game.playing_order[1]])
+    game.trump = player1.possible_trump
+    bidding_winner = player1
+    # zeigt die erhaltenen Reizwerte an
     l32 = Label(fenster, text = f"{player1.value_possible_trump}")
     l32.place(x = 200, y = 650, width = 50, height = 40)
     l33 = Label(fenster, text = f"{player2.value_possible_trump}")
     l33.place(x = 100, y = 160, width = 50, height = 40)
     l34 = Label(fenster, text = f"{player3.value_possible_trump}")
     l34.place(x = 800, y = 160, width = 50, height = 40)
+    # zeigt den Reizgewinner an
     if game.trump != None:
         game.set_teams(bidding_winner)
         [bidding_winner.increase_points(card) for card in deck]
@@ -168,18 +179,25 @@ def show_trump():
         b1.place(x = 700, y = 550, width = 100, height = 50)
         
 def confirm_choice(suit):
+    '''
+    Benutzer bestätigt die Eingabe
+    '''
     confirm = Button(fenster, text = "Confirm", command = lambda: set_player_trump(suit))
     confirm.place(x = 700, y = 550, width = 100, height = 50)
     
 def set_player_trump(suit):
+    # gibt die Trumpffarbe von Spieler 1 an
     if suit == "":
         player1.possible_trump = None
     else:
         player1.possible_trump = suit
     show_trump()
 
-# main function for bidding
+
 def start_bidding(deck1):
+    '''
+    Hauptfunktion für das Reizen
+    '''
     
     #print("im bidding", deck)
     global fenster
@@ -187,6 +205,7 @@ def start_bidding(deck1):
     fenster.geometry("1400x900")
     fenster.title("Skat Game!")
     fenster.configure(background = "green")
+    #print(deck1)
     
     global l1, l2, l3, l4, l5, l6, l7, l8, l9, l10 
     global l11, l12, l13, l14, l15, l16, l17, l18, l19, l20
@@ -197,7 +216,14 @@ def start_bidding(deck1):
     l31 = Label(fenster, text = "", font = ("Helvetica", 40), bg = "green")
     l31.place(x = 400, y = 400, width = 600, height = 60)
     hand_the_deck()
+    player1.cards = player1.initial_cards
+    player2.cards = player2.initial_cards
+    player3.cards = player3.initial_cards
+    print(deck)
+    player1.take_skat(deck)
     
+    
+    # Initialisieren der Labels
     l40 = Label(fenster, text = "Human Player")
     l40.place(x = 350, y = 630, width = 100, height = 50)
      
@@ -274,12 +300,13 @@ def start_bidding(deck1):
     l29.place(x = 1180, y = 50, width = 60, height = 100)
     l30.place(x = 1240, y = 50, width = 60, height = 100)
     
-    # possible trumps for player 1
+    # Auswahl für Spieler 1
     diamonds = Button(fenster, text = "Diamonds", command = lambda: confirm_choice("diamonds"))
     hearts = Button(fenster, text = "Hearts", command = lambda: confirm_choice("hearts"))
     spades = Button(fenster, text = "Spades", command = lambda: confirm_choice("spades"))
     clubs = Button(fenster, text = "Clubs", command = lambda: confirm_choice("clubs"))
     none = Button(fenster, text = "None", command = lambda: confirm_choice(""))
+    
     
     diamonds.place(x = 150, y = 550, width = 100, height = 50)
     hearts.place(x = 250, y = 550, width = 100, height = 50)
@@ -287,6 +314,9 @@ def start_bidding(deck1):
     clubs.place(x = 450, y = 550, width = 100, height = 50)
     none.place(x = 550, y = 550, width = 100, height = 50)
     
+    player1.possible_trump = 3 - game.games
+    confirm_choice(player1.convert_card_suit_int_to_str(player1.possible_trump))
+    set_player_trump(player1.convert_card_suit_int_to_str(player1.possible_trump))
     
     show_images()
     

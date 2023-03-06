@@ -7,8 +7,10 @@ import time
 import numpy as np
 from numpy import genfromtxt
 
-# shows the images of the cards
 def show_images():
+    '''
+    passt die Kartengröße auf die Labels an
+    '''
 
     # Images Player 1
     player1_image1 = player1.resize_card(f"assets/{player1.cards[0]}.png", False)
@@ -134,75 +136,101 @@ def show_images():
     l30.config(image = player3_image10)
     l30.image = player3_image10
     
-#  hands the deck to the players
 def hand_the_deck():
+    # sortiert die Blätter der Spieler nach dem Trumpf
     player1.sort_deck(game.trump)
     player2.sort_deck(game.trump)
     player3.sort_deck(game.trump)
-
-# checks the number of played cards
+    
 def check_number_of_cards(player, card):
+    '''
+    überprüft ob ein Stich vollendet ist
+    '''
     global state_comparing_cards, b36
     comb = (player, card)
     state_comparing_cards[int(is_playing.name[-1]) - 1] = comb
+    # wurden 3 Karten angespielt
     if game.get_number_of_cards(state_comparing_cards):
+        # berechne Stichgewinner
         winner = game.get_temp_winner(state_comparing_cards[first_card_index],
                         state_comparing_cards[first_card_index - 2],
                         state_comparing_cards[first_card_index - 1])
+        # Zeige Button an, um Stich zu beenden
         b36 = Button(window, text = "Increase Points", bg = "grey", 
                         command = lambda: b_click_collect(winner, state_comparing_cards))
         b36.place(x = 900, y = 450, width = 200, height = 50)
 
-# collects the 3 played cards
 def b_click_collect(winner, list_player_and_cards):
+    '''
+    sammelt die drei Stichkarten ein und überschreibt die Werte der Variablen
+    '''
     global l33, l34, l35, l36, l37, l38, l39, b36
     global is_playing, state_comparing_cards
     global list_players, first_card_index
+    # Punkte dem Stichgewinner zuschreiben
     for comb in list_player_and_cards:
         winner.increase_points(comb[1])
+    # Kartenanzahl erhöhen
     game.increase_count_played_cards(3)
+    # Labels zurücksetzen
     clear_image(l33), time.sleep(0.2)
     clear_image(l34), time.sleep(0.2)
     clear_image(l35), time.sleep(0.2)      
     b36.place_forget()
     change_label_player_text(is_playing)
+    # Stich zurücksetzen
     state_comparing_cards = [None, None, None]
     game.set_total_points(player1.points, player2.points, player3.points)
+    # wenn Spiel vorbei ist
     if game.is_over():
+        # Labels verschwinden lassen
         l33.place_forget(), l34.place_forget(), l35.place_forget()
         l37.place_forget(), l38.place_forget(), l39.place_forget()
         l36.place_forget()
         list_players = [player1, player2, player3]
+        # Gewinner des Spiels ermitteln
         game_winner = game.get_winning_player(list_players)
+        # Gewinner anzeigen
         show_winner(game_winner)
+    # sonst Vorhand, Mittelhand und Hinterhand überschreiben
     else:
         is_playing = winner
         game.set_playing_hands(winner)
         first_card_index = winner.player_index
-        if first_card_index != 0:
-            automated_card_choice(winner, dict_labels_player[first_card_index], dict_buttons_player[first_card_index])
+        #if first_card_index != 0:
+        # Berechnung der neuen Karte für den neuen Stich
+        automated_card_choice(winner, dict_labels_player[first_card_index], dict_buttons_player[first_card_index])
 
-# clears the image of an label
 def clear_image(l):
+    # lässt das Bild in einem Image verschwinden
     l.config(image = None)
     l.image = None
 
-# shows the game winner
 def show_winner(winner):
+    '''
+    Anzeige für den Gewinner eines Spiels
+    '''
     l40 = Label(window, text = "", font = ("Helvetica", 30), bg = "green")
     l40.place(x = 500, y = 300, width = 700, height = 80)
+    # wenn die Teamspieler gewonnen haben
     if type(winner) == list:
         l40.config(text = f"{winner[0].name} and {winner[1].name} win the game")
+    # wenn der Alleinspieler gewonnen hat
     else:
         l40.config(text = f"{winner.name} wins the game")
-
-# changes the text of the label, which shows the current playing player        
+    time.sleep(1)
+    window.destroy()
+    # neues Spiel mit nächster Trumpffarbe beginnen
+    print(player1.points, player2.points, player3.points)
+    start()
+     
 def change_label_player_text(player):
+    # verändert den Text im Label des aktuell spielenden Spielers in einem Stich
     global l36
     l36.config(text = f"{player.name} plays")
-
-# calculates the amount of a var in a list    
+  
 def amount_analysis(var, list):
+    # berechnet wie oft ein Element in einer Liste vorkommt
     amount_of_var = 0
     for i in list:
         if i == var:
@@ -212,24 +240,35 @@ def amount_analysis(var, list):
 # initializes the important parameters for running the algorithm and 
 # returns the value to the b_click function
 def automated_card_choice(player, player_labels_liste, player_buttons_liste):
+    '''
+    initialisiert die Variablen, die für die Berechnung der zu spielenden Karten
+    benötigt werden
+    '''
     all_players = [player1, player2, player3]
     all_cards = []
+    # aktueller Stich ohne Spielerobjekte dargestellt
     temp_played_cards = [None, None, None]
     for i in range(len(state_comparing_cards)):
         if state_comparing_cards[i] != None:
-            temp_played_cards[i] = state_comparing_cards[i][1]   
+            temp_played_cards[i] = state_comparing_cards[i][1]  
+    # alle Karten festhalten
     for players in all_players:
         for card in players.cards:
             all_cards.append(card)
     team_order = [player1.team, player2.team, player3.team]
+    # Aufrufen der Methode in der Spieler-Klasse zur Berechnung der gespielten Karte
     playing_card = player.MCTS(all_cards, temp_played_cards, game.trump, team_order, first_card_index, player.cards)
+    # konvertiere den Typ des Trumpfes in einen Integer
     if type(game.trump) == int:
         game.trump = player.convert_card_suit_int_to_str(game.trump)
+    # Karte anzeigen lassen
     if playing_card:
         b_click(playing_card, dict_labels_player[player.player_index][player.cards.index(playing_card)], player, dict_buttons_player[player.player_index][player.cards.index(playing_card)])
 
-# is called after a button is clicked
 def b_click(card, l, player,  b):
+    '''
+    gespielte Karte wird angezeigt und Variablen für den nächsten Spieler überschrieben
+    '''
     global l33, l34, l35
     global is_playing, state_comparing_cards#, b36
     global first_card_index
@@ -237,32 +276,51 @@ def b_click(card, l, player,  b):
     global list_buttons_player1, list_buttons_player2, list_buttons_player3
     players_list = [player1, player2, player3]
     labels_list = [l33, l34, l35]
+    # wenn der Spieler noch nicht alle Karten gespielt hat
     if amount_analysis(None, player.cards) < 10:
+        # wenn der Spieler in Vorhand ist oder die angespielte Karte im Bezug zur 
+        # Karte der Vorhand und dem eigenen Blatt übereinstimmt
         if (amount_analysis(None, state_comparing_cards) == 3 or player.check_card_suit(card, state_comparing_cards[first_card_index][1], game.trump)) and amount_analysis(None, state_comparing_cards) != 0:
             
             if card in player.cards:
+                # Bildgröße neu anpassen
                 player_handed_card = player.resize_card(f"assets/{card}.png", True)
                 labels_list[player.player_index].config(image = player_handed_card)
                 labels_list[player.player_index].image = player_handed_card
+                # Kartenbild aus dem Spielerdeck entfernen
                 b.place_forget(), l.place_forget()
+                # Kartenobjekt aus dem Blatt entfernen
                 player.remove_card(card)
                 check_number_of_cards(player, card)
-                is_playing = players_list[players_list.index(player) - 2]
-                change_label_player_text(is_playing)
+                if amount_analysis(None, state_comparing_cards) != 0:
+                    # Vaktueller Spieler wird geändert
+                    is_playing = players_list[players_list.index(player) - 2]
+                    change_label_player_text(is_playing)
                 
-                if amount_analysis(None, state_comparing_cards) == 2:
-                    first_card_index = player.player_index
-                time.sleep(1)
-                if is_playing.player_index != 0:
+                    # ggf. Index der Vorhand anpassen
+                    if amount_analysis(None, state_comparing_cards) == 2:
+                        first_card_index = player.player_index
+                    time.sleep(1)
+                
+                    #if is_playing.player_index != 0:
                     automated_card_choice(is_playing, dict_labels_player[is_playing.player_index], dict_buttons_player[is_playing.player_index])
-            
+ 
+deck1 = Deck()        
 # shows the starting state of the game
 def start():
-    game.increase_number_of_games()
+    global deck1
     import bidding
-    deck.create_deck()
-    deck.shuffle()
+    #print(game.games)
+    if game.games == 0:
+        deck = Deck()
+        deck.create_deck()
+        deck.shuffle()
+        deck1 = deck.copy()
+    else:
+        deck = deck1
+    # zuerst Reizen
     bidding.start_bidding(deck)
+    game.increase_number_of_games()
     
     global window
     window = Tk()
@@ -281,17 +339,28 @@ def start():
         window.destroy()
     hand_the_deck()
     global is_playing, state_comparing_cards
+    # Stichkarten
     state_comparing_cards = [None, None, None]
+    # aktuell spielender Spieler
     is_playing = game.playing_order[0]
     if type(game.trump) == str:
         game.set_trump(game.trump)
 
+    # Vorhand Index festlegen und Punkte zurücksetzen
     first_card_index = int(is_playing.name[-1]) - 1
+    player1.reset_points()
+    player2.reset_points()
+    player3.reset_points()
+    game.reset_count_played_cards()
+    player1.increase_points(deck[0])
+    player1.increase_points(deck[1])
     
     #create Labels
     #l40 = Label(window, text = "Human Player")
     #l40.place(x = 50, y = 600, width = 100, height = 50)
     # Labels Player 1
+    
+    # Labels einstellen
     l1 = Label(window, text = "", bg = "green")
     l2 = Label(window, text = "", bg = "green")
     l3 = Label(window, text = "", bg = "green")
@@ -452,20 +521,49 @@ def start():
     show_images()
     
     first_card_index = is_playing.player_index
-    if first_card_index != 0:
-        automated_card_choice(is_playing, dict_labels_player[is_playing.player_index], dict_buttons_player[is_playing.player_index])
+    #if first_card_index != 0:
+    automated_card_choice(is_playing, dict_labels_player[is_playing.player_index], dict_buttons_player[is_playing.player_index])
     window.mainloop()
 start()
 
+def read_datas(filename):
+    # Daten aus einer csv-Datei auslesen
+    csvData = genfromtxt(filename, delimiter = ",")
+    return csvData
+
+def write_datas(test_datas):
+    '''
+    Daten in die Trainingsdaten csv-Datei schreiben
+    '''
+    # lesen und in eine Liste umwandeln
+    tmp = read_datas("datas.csv")
+    tmp = tmp.tolist()
+    len_tmp = len(tmp)
+
+    # in die entsprechende Form als Zahlenwerte bringen
+    for i in range(len(test_datas)):
+        tmp.append(list())
+        for k in range(len(test_datas[i]) - 2):
+            tmp[i+len_tmp].append(test_datas[i][k].suit)
+            tmp[i+len_tmp].append(test_datas[i][k].value)
+        tmp[i+len_tmp].append(test_datas[i][-2])
+        tmp[i+len_tmp].append(test_datas[i][-1])   
+    np.savetxt("datas.csv", tmp, delimiter = ",")
+
 # creates a test data set or training data set
 def create_data_set():
+    '''
+    lässt mehrmals durchspielen, um ein großen Datensatz in einer kleinen Zeitspanne zu generieren
+    '''
     test_datas = []
     deck = Deck()
     for i in range(300):
         print(i)
+        # Kartendeck erstellen
         deck.create_deck()
         deck.shuffle()
         deck1 = deck.copy()
+        # für jede Trumpffarbe durchspielen
         for j in range(3,-1,-1):
             deck = Deck()
             deck = deck1.copy()
@@ -474,6 +572,7 @@ def create_data_set():
             datas = deck[0:10]
             datas.append(None)
             datas.append(None)
+            # jede Farbe wird 10x durchgespielt
             for k in range(10):
                 start()
                 results.append(player1.points)
@@ -482,8 +581,11 @@ def create_data_set():
                 player3.reset_points()
                 game.reset_count_played_cards()
                 deck = deck1.copy()
+            # extremale Werte aus der Betrachtung entfernen
             results.remove(max(results))
             results.remove(min(results))
+            # durchschnitt aus den Ergebnissen bilden
+            # entscheiden ob Blatt spielbar oder nicht
             average = sum(results)/8
             if average > 60:
                 datas[-1] = 1
@@ -493,20 +595,8 @@ def create_data_set():
                 datas[-2] = j
             test_datas.append(datas)
         deck = Deck()
-    def read_datas(filename):
-        csvData = genfromtxt(filename, delimiter = ",")
-        return csvData
-    tmp = read_datas("datas.csv")
-    tmp = tmp.tolist()
-    len_tmp = len(tmp)
-
-
-    for i in range(len(test_datas)):
-        tmp.append(list())
-        for k in range(len(test_datas[i]) - 2):
-            tmp[i+len_tmp].append(test_datas[i][k].suit)
-            tmp[i+len_tmp].append(test_datas[i][k].value)
-        tmp[i+len_tmp].append(test_datas[i][-2])
-        tmp[i+len_tmp].append(test_datas[i][-1])   
-    np.savetxt("datas.csv", tmp, delimiter = ",")
+    write_datas(test_datas)
+    
+        
+    
 #create_data_set()

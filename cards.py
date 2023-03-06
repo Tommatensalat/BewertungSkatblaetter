@@ -6,27 +6,28 @@ class Card(object):
         self.value = value
         self.suit = suit
         
-    # returns the value of a card
     def get_value(self):
+        # gibt den Wert einer Karte zurück
         return self.value
     
-    # returns the suit of a card
     def get_suit(self):
+        # gibt die Farbe einer Karte zurück
         return self.suit
     
-    # checks if the card is a louse
     def check_louse(self):
+        # gibt zurück, ob die Karte eine Lusche ist
         if self.value == 7 or self.value == 8 or self.value == 9:
             return True
         return False
     
     def is_trump(self, trump):
+        # gibt zurück, ob die Karte Teil des Trumpfes ist 
         if self.suit == trump or self.value == 2:
             return True
         return False
     
-    # represents the output of a card
     def __repr__(self):
+        # repräsentiert die Darstellung der Karte
         value_name_dict = {
             7: "seven",
             8: "eight",
@@ -52,20 +53,25 @@ class Card(object):
 class Deck(list):
     
     def __init__(self):
+        # eine Sammlung von Karten
         super().__init__()
         
     def create_deck(self):
-        #self = []
+        '''
+        dem Deck werden alle Karten zugefügt
+        '''
+        # Mögliche Kartenfarben
         suits = list(range(4))
-        values_louses = list(range(7, 11))
+        # Werte der Luschen + Wert der Karte 10 und Ass
+        values_louses = list(range(7, 12))
+        # Werte der anderen Karten
         value_others = list(range(2, 5))
+        # Kreuzung und Hinzufügen
         [[self.append(Card(value, suit)) for suit in suits] for value in values_louses]
         [[self.append(Card(value, suit)) for suit in suits] for value in value_others]
-        value_ace = 11
-        [self.append(Card(value_ace, suit)) for suit in suits]
                 
-    # shuffles the deck
     def shuffle(self):
+        # mischt die Karten zufällig
         random.shuffle(self)
 
 deck = Deck()
