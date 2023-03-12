@@ -596,8 +596,8 @@ class MCTS_Node:
                 return possible_moves
             
             else:
-                # Fall 2: Bube angespielt
-                if first_card.value == 2:
+                # Fall 2: Bube oder Trumpf angespielt
+                if first_card.value == 2 or first_card.suit == self.trump:
                     # Bube oder Trumpfkarte vorhanden
                     if self.trump in suits or 2 in values:
                         possible_moves = [card for card in card_list if card.suit == self.trump or card.value == 2]
